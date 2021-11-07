@@ -1,0 +1,6 @@
+class MainBloc {
+
+  void dispose() {
+
+  }
+}
