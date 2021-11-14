@@ -72,21 +72,29 @@ class _EditTextBarState extends State<EditTextBar> {
               if (selectedMemeText?.text != controller.text) {
                 final newText = selectedMemeText?.text ?? "";
                 controller.text = newText;
-                controller.selection =
-                    TextSelection.collapsed(offset: newText.length);
+                controller.selection = TextSelection.collapsed(offset: newText.length);
               }
+              final hasSelectedText = selectedMemeText != null;
               return TextField(
-                enabled: selectedMemeText != null,
+                enabled: hasSelectedText,
                 controller: controller,
                 onChanged: (text) {
-                  if (selectedMemeText != null) {
-                    bloc.changeMemeText(selectedMemeText.id, text);
+                  if (hasSelectedText) {
+                    bloc.changeMemeText(selectedMemeText!.id, text);
                   }
                 },
                 onEditingComplete: () => bloc.deselectMemeText(),
+                cursorColor: AppColors.fuchsia,
                 decoration: InputDecoration(
+                  hintText: hasSelectedText ? "Ввести текст" : "",
+                  hintStyle: TextStyle(fontSize: 16, color: AppColors.darkGrey38),
                   filled: true,
-                  fillColor: AppColors.darkGrey6,
+                  fillColor: hasSelectedText ? AppColors.fuchsia16 : AppColors.darkGrey6,
+                  focusColor: AppColors.fuchsia16,
+                  disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.darkGrey38)),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.fuchsia38)),
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.fuchsia, width: 2)),
                 ),
               );
             }));
@@ -157,9 +165,8 @@ class MemeCanvasWidget extends StatelessWidget {
                       (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
                     ),
                 builder: (context, snapshot) {
-                  final MemeCanvasObject mco = snapshot.hasData
-                      ? snapshot.data!
-                      : MemeCanvasObject.emptyObject();
+                  final MemeCanvasObject mco =
+                      snapshot.hasData ? snapshot.data! : MemeCanvasObject.emptyObject();
                   return LayoutBuilder(builder: (context, constraints) {
                     return Stack(
                       children: mco.memeTexts
