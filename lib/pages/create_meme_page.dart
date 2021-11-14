@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:memogenerator/blocs/create_meme_bloc.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -91,8 +92,10 @@ class _EditTextBarState extends State<EditTextBar> {
                   filled: true,
                   fillColor: hasSelectedText ? AppColors.fuchsia16 : AppColors.darkGrey6,
                   focusColor: AppColors.fuchsia16,
-                  disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.darkGrey38)),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.fuchsia38)),
+                  disabledBorder:
+                      UnderlineInputBorder(borderSide: BorderSide(color: AppColors.darkGrey38)),
+                  enabledBorder:
+                      UnderlineInputBorder(borderSide: BorderSide(color: AppColors.fuchsia38)),
                   focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: AppColors.fuchsia, width: 2)),
                 ),
@@ -115,6 +118,7 @@ class CreateMemePageContent extends StatefulWidget {
 class _CreateMemePageContentState extends State<CreateMemePageContent> {
   @override
   Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return Column(
       children: [
         Expanded(flex: 2, child: MemeCanvasWidget()),
@@ -127,12 +131,41 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
           flex: 1,
           child: Container(
             color: Colors.white,
-            child: ListView(
-              children: [
-                const SizedBox(height: 12),
-                const AddNewMemeTextButton(),
-              ],
-            ),
+            child: StreamBuilder<List<MemeText>>(
+                stream: bloc.observeMemeTexts(),
+                initialData: const <MemeText>[],
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final list = snapshot.data!;
+                    return ListView.separated(
+                      itemCount: 2 + list.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == 0) {
+                          return const SizedBox(height: 12);
+                        } else if (index == 1) {
+                          return const AddNewMemeTextButton();
+                        } else {
+                          return Container(
+                            height: 48,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(list[index - 2].text, style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+                          );
+                        }
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        if (index > 1) {
+                          return Container(
+                              height: 1,
+                              color: AppColors.darkGrey,
+                              margin: const EdgeInsets.only(left: 16));
+                        } else
+                          return SizedBox.shrink();
+                      },
+                    );
+                  } else
+                    return SizedBox.shrink();
+                }),
           ),
         ),
       ],
