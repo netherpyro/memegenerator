@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:memogenerator/blocs/create_meme_bloc.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class CreateMemePage extends StatefulWidget {
   CreateMemePage({Key? key}) : super(key: key);
@@ -143,41 +144,69 @@ class MemeCanvasWidget extends StatelessWidget {
       color: AppColors.darkGrey38,
       padding: const EdgeInsets.all(8),
       alignment: Alignment.topCenter,
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: Container(
-          color: Colors.white,
-          child: StreamBuilder<List<MemeText>>(
-              initialData: const <MemeText>[],
-              stream: bloc.observeMemeTexts(),
-              builder: (context, snapshot) {
-                final memeTexts =
-                    snapshot.hasData ? snapshot.data! : const <MemeText>[];
-                return LayoutBuilder(builder: (context, constraints) {
-                  return Stack(
-                    children: memeTexts
-                        .map((e) => DraggableMemeText(
-                              memeText: e,
-                              parentConstraints: constraints,
-                            ))
-                        .toList(),
-                  );
-                });
-              }),
+      child: GestureDetector(
+        onTap: () => bloc.deselectMemeText(),
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: Container(
+            color: Colors.white,
+            child: StreamBuilder<MemeCanvasObject>(
+                initialData: MemeCanvasObject.emptyObject(),
+                stream: bloc.observeMemeTexts().combineLatest(
+                      bloc.observeSelectedMemeText(),
+                      (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
+                    ),
+                builder: (context, snapshot) {
+                  final MemeCanvasObject mco = snapshot.hasData
+                      ? snapshot.data!
+                      : MemeCanvasObject.emptyObject();
+                  return LayoutBuilder(builder: (context, constraints) {
+                    return Stack(
+                      children: mco.memeTexts
+                          .map((e) => DraggableMemeText(
+                                memeText: e,
+                                parentConstraints: constraints,
+                                selected: mco.matchesId(e.id),
+                              ))
+                          .toList(),
+                    );
+                  });
+                }),
+          ),
         ),
       ),
     );
   }
 }
 
+class MemeCanvasObject {
+  late List<MemeText> memeTexts;
+  late MemeText? selectedText;
+
+  MemeCanvasObject(List<MemeText> memeTexts, MemeText? selectedMemeText) {
+    this.memeTexts = memeTexts;
+    this.selectedText = selectedMemeText;
+  }
+
+  factory MemeCanvasObject.emptyObject() {
+    return MemeCanvasObject(const <MemeText>[], null);
+  }
+
+  bool matchesId(String? id) {
+    return selectedText?.id == id;
+  }
+}
+
 class DraggableMemeText extends StatefulWidget {
   final MemeText memeText;
   final BoxConstraints parentConstraints;
+  final bool selected;
 
   const DraggableMemeText({
     Key? key,
     required this.memeText,
     required this.parentConstraints,
+    required this.selected,
   }) : super(key: key);
 
   @override
@@ -198,6 +227,7 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => bloc.selectMemeText(widget.memeText.id),
+        onPanDown: (_) => bloc.selectMemeText(widget.memeText.id),
         onPanUpdate: (details) {
           setState(() {
             left = calculateLeft(details);
@@ -205,7 +235,16 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
           });
         },
         child: Container(
-          color: AppColors.darkGrey6,
+          decoration: widget.selected
+              ? BoxDecoration(
+                  color: AppColors.darkGrey16,
+                  border: Border.fromBorderSide(
+                    BorderSide(
+                      color: AppColors.fuchsia,
+                    ),
+                  ),
+                )
+              : null,
           constraints: BoxConstraints(
             maxWidth: widget.parentConstraints.maxWidth,
             maxHeight: widget.parentConstraints.maxHeight,
