@@ -131,25 +131,32 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
           flex: 1,
           child: Container(
             color: Colors.white,
-            child: StreamBuilder<List<MemeText>>(
-                stream: bloc.observeMemeTexts(),
-                initialData: const <MemeText>[],
+            child: StreamBuilder<MemeCanvasObject>(
+                stream: bloc.observeMemeTexts().combineLatest(
+                      bloc.observeSelectedMemeText(),
+                      (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
+                    ),
+                initialData: MemeCanvasObject.emptyObject(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    final list = snapshot.data!;
+                    final MemeCanvasObject mco = snapshot.data!;
                     return ListView.separated(
-                      itemCount: 2 + list.length,
+                      itemCount: 2 + mco.memeTexts.length,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == 0) {
                           return const SizedBox(height: 12);
                         } else if (index == 1) {
                           return const AddNewMemeTextButton();
                         } else {
+                          final memeText = mco.memeTexts[index - 2];
                           return Container(
                             height: 48,
+                            color: mco.matchesId(memeText.id) ? AppColors.darkGrey16 : null,
                             alignment: Alignment.centerLeft,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(list[index - 2].text, style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+                            child: Text(memeText.text,
+                                style:
+                                    GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
                           );
                         }
                       },
@@ -198,8 +205,7 @@ class MemeCanvasWidget extends StatelessWidget {
                       (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
                     ),
                 builder: (context, snapshot) {
-                  final MemeCanvasObject mco =
-                      snapshot.hasData ? snapshot.data! : MemeCanvasObject.emptyObject();
+                  final MemeCanvasObject mco = snapshot.data!;
                   return LayoutBuilder(builder: (context, constraints) {
                     return Stack(
                       children: mco.memeTexts
@@ -254,13 +260,16 @@ class DraggableMemeText extends StatefulWidget {
 }
 
 class _DraggableMemeTextState extends State<DraggableMemeText> {
-  double top = 0;
-  double left = 0;
+  double top = -1;
+  double left = -1;
   final double padding = 8;
 
   @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    top = top == -1 ? widget.parentConstraints.maxHeight / 2 : top;
+    left = left == -1 ? widget.parentConstraints.maxWidth / 3 : left;
+
     return Positioned(
       top: top,
       left: left,
