@@ -156,7 +156,7 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(memeText.text,
                                 style:
-                                    GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400)),
+                                    GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.darkGrey)),
                           );
                         }
                       },
