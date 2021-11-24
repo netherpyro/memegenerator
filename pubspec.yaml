@@ -18,10 +18,15 @@ dependencies:
   google_fonts: ^2.1.0
   uuid: ^3.0.5
   stream_transform: ^2.0.0
+  json_annotation: ^4.3.0
+  equatable: ^2.0.3
+  shared_preferences: ^2.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  json_serializable: ^6.0.1
+  build_runner: ^2.1.5
 
 flutter:
   uses-material-design: true

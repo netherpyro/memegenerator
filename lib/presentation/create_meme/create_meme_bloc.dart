@@ -1,6 +1,7 @@
-import 'package:rxdart/rxdart.dart';
-import 'package:uuid/uuid.dart';
 import 'package:collection/collection.dart';
+import 'package:rxdart/rxdart.dart';
+
+import 'models/meme_text.dart';
 
 class CreateMemeBloc {
   final memeTextsSubject = BehaviorSubject<List<MemeText>>.seeded(<MemeText>[]);
@@ -15,7 +16,7 @@ class CreateMemeBloc {
   void changeMemeText(final String id, final String text) {
     final copiedList = [...memeTextsSubject.value];
     final index = copiedList.indexWhere((element) => element.id == id);
-    if (index == -1){
+    if (index == -1) {
       return;
     }
     copiedList.removeAt(index);
@@ -32,38 +33,13 @@ class CreateMemeBloc {
     selectedMemeTextSubject.add(null);
   }
 
-  Stream<List<MemeText>> observeMemeTexts() => memeTextsSubject.distinct((prev, next) => ListEquality().equals(prev, next));
+  Stream<List<MemeText>> observeMemeTexts() =>
+      memeTextsSubject.distinct((prev, next) => ListEquality().equals(prev, next));
+
   Stream<MemeText?> observeSelectedMemeText() => selectedMemeTextSubject.distinct();
 
   void dispose() {
     memeTextsSubject.close();
     selectedMemeTextSubject.close();
-  }
-}
-
-class MemeText {
-  final String id;
-  final String text;
-
-  MemeText({required this.id, required this.text});
-
-  factory MemeText.create() {
-    return MemeText(id: Uuid().v4(), text: "");
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MemeText &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          text == other.text;
-
-  @override
-  int get hashCode => id.hashCode ^ text.hashCode;
-
-  @override
-  String toString() {
-    return 'MemeText{id: $id, text: $text}';
   }
 }

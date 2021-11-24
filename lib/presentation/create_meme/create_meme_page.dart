@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:memogenerator/blocs/create_meme_bloc.dart';
+import 'package:memogenerator/presentation/create_meme/create_meme_bloc.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_transform/stream_transform.dart';
+
+import 'models/meme_text.dart';
+import 'models/meme_text_with_selection.dart';
 
 class CreateMemePage extends StatefulWidget {
   CreateMemePage({Key? key}) : super(key: key);
@@ -130,7 +133,7 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
         Expanded(
           flex: 1,
           child: Container(
-            color: Colors.white,
+            color: Colors.amber[50],
             child: StreamBuilder<MemeCanvasObject>(
                 stream: bloc.observeMemeTexts().combineLatest(
                       bloc.observeSelectedMemeText(),
@@ -155,8 +158,10 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
                             alignment: Alignment.centerLeft,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(memeText.text,
-                                style:
-                                    GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.darkGrey)),
+                                style: GoogleFonts.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.darkGrey)),
                           );
                         }
                       },
@@ -222,24 +227,6 @@ class MemeCanvasWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class MemeCanvasObject {
-  late List<MemeText> memeTexts;
-  late MemeText? selectedText;
-
-  MemeCanvasObject(List<MemeText> memeTexts, MemeText? selectedMemeText) {
-    this.memeTexts = memeTexts;
-    this.selectedText = selectedMemeText;
-  }
-
-  factory MemeCanvasObject.emptyObject() {
-    return MemeCanvasObject(const <MemeText>[], null);
-  }
-
-  bool matchesId(String? id) {
-    return selectedText?.id == id;
   }
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:memogenerator/blocs/main_bloc.dart';
-import 'package:memogenerator/pages/create_meme_page.dart';
+import 'package:memogenerator/presentation/create_meme/create_meme_page.dart';
+import 'package:memogenerator/presentation/main/main_bloc.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
 
@@ -30,13 +30,11 @@ class _MainPageState extends State<MainPage> {
           centerTitle: true,
           backgroundColor: AppColors.lemon,
           foregroundColor: AppColors.darkGrey,
-          title: Text("Мемогенератор",
-              style: GoogleFonts.seymourOne(fontSize: 24)),
+          title: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24)),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => CreateMemePage()));
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreateMemePage()));
           },
           backgroundColor: AppColors.fuchsia,
           icon: Icon(Icons.add, color: Colors.white),
