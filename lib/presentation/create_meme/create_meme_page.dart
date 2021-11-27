@@ -134,15 +134,15 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
           flex: 1,
           child: Container(
             color: Colors.amber[50],
-            child: StreamBuilder<MemeCanvasObject>(
+            child: StreamBuilder<MemeTextWithSelection>(
                 stream: bloc.observeMemeTexts().combineLatest(
                       bloc.observeSelectedMemeText(),
-                      (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
+                      (p0, p1) => MemeTextWithSelection(p0, p1 as MemeText?),
                     ),
-                initialData: MemeCanvasObject.emptyObject(),
+                initialData: MemeTextWithSelection.emptyObject(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    final MemeCanvasObject mco = snapshot.data!;
+                    final MemeTextWithSelection mco = snapshot.data!;
                     return ListView.separated(
                       itemCount: 2 + mco.memeTexts.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -203,14 +203,14 @@ class MemeCanvasWidget extends StatelessWidget {
           aspectRatio: 1,
           child: Container(
             color: Colors.white,
-            child: StreamBuilder<MemeCanvasObject>(
-                initialData: MemeCanvasObject.emptyObject(),
+            child: StreamBuilder<MemeTextWithSelection>(
+                initialData: MemeTextWithSelection.emptyObject(),
                 stream: bloc.observeMemeTexts().combineLatest(
                       bloc.observeSelectedMemeText(),
-                      (p0, p1) => MemeCanvasObject(p0, p1 as MemeText?),
+                      (p0, p1) => MemeTextWithSelection(p0, p1 as MemeText?),
                     ),
                 builder: (context, snapshot) {
-                  final MemeCanvasObject mco = snapshot.data!;
+                  final MemeTextWithSelection mco = snapshot.data!;
                   return LayoutBuilder(builder: (context, constraints) {
                     return Stack(
                       children: mco.memeTexts
@@ -268,6 +268,7 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
           setState(() {
             left = calculateLeft(details);
             top = calculateTop(details);
+            bloc.changeMemeTextOffset(widget.memeText.id, Offset(left, top));
           });
         },
         child: Container(

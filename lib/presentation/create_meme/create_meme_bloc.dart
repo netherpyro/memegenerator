@@ -1,11 +1,45 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'models/meme_text.dart';
+import 'models/meme_text_offset.dart';
 
 class CreateMemeBloc {
   final memeTextsSubject = BehaviorSubject<List<MemeText>>.seeded(<MemeText>[]);
   final selectedMemeTextSubject = BehaviorSubject<MemeText?>.seeded(null);
+  final memeTextOffsetsSubject = BehaviorSubject<List<MemeTextOffset>>.seeded(<MemeTextOffset>[]);
+  final newMemeTextOffsetSubject = BehaviorSubject<MemeTextOffset?>.seeded(null);
+
+  StreamSubscription<MemeTextOffset?>? newMemeTextSubscription;
+
+  CreateMemeBloc() {
+    newMemeTextSubscription = newMemeTextOffsetSubject
+    .debounceTime(Duration(milliseconds: 300))
+        .listen((value) {
+      if (value != null) {
+        _changeMemeTextOffsetInternal(value);
+      }
+    }, onError: (e, st) => print("Error in newMemeTextOffsetSubject: $e, $st"));
+  }
+
+  void changeMemeTextOffset(final String id, final Offset offset) {
+    newMemeTextOffsetSubject.add(MemeTextOffset(id: id, offset: offset));
+  }
+
+  void _changeMemeTextOffsetInternal(final MemeTextOffset newMemeTextOffset) {
+    final copiedMemeTextOffsets = [...memeTextOffsetsSubject.value];
+    final currentMemeTextOffset =
+        copiedMemeTextOffsets.firstWhereOrNull((element) => element.id == newMemeTextOffset.id);
+    if (currentMemeTextOffset != null) {
+      copiedMemeTextOffsets.remove(currentMemeTextOffset);
+    }
+    copiedMemeTextOffsets.add(newMemeTextOffset);
+    memeTextOffsetsSubject.add(copiedMemeTextOffsets);
+    print('got new offset: $newMemeTextOffset');
+  }
 
   void addNewText() {
     final newMemeText = MemeText.create();
@@ -41,5 +75,8 @@ class CreateMemeBloc {
   void dispose() {
     memeTextsSubject.close();
     selectedMemeTextSubject.close();
+    memeTextOffsetsSubject.close();
+    newMemeTextOffsetSubject.close();
+    newMemeTextSubscription?.cancel();
   }
 }

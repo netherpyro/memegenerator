@@ -7,7 +7,7 @@ class SharedPreferencesData {
 
   factory SharedPreferencesData.getInstance() => _instance ??= SharedPreferencesData._internal();
 
-  SharedPreferencesData.internal();
+  SharedPreferencesData._internal();
 
   Future<bool> setMemes(final List<String> memes) async {
     final sp = await SharedPreferences.getInstance();

@@ -2,14 +2,14 @@ import 'package:equatable/equatable.dart';
 
 import 'meme_text.dart';
 
-class MemeCanvasObject extends Equatable {
+class MemeTextWithSelection extends Equatable {
   final List<MemeText> memeTexts;
   final MemeText? selectedText;
 
-  MemeCanvasObject(this.memeTexts, this.selectedText);
+  MemeTextWithSelection(this.memeTexts, this.selectedText);
 
-  factory MemeCanvasObject.emptyObject() {
-    return MemeCanvasObject(const <MemeText>[], null);
+  factory MemeTextWithSelection.emptyObject() {
+    return MemeTextWithSelection(const <MemeText>[], null);
   }
 
   bool matchesId(String? id) {
