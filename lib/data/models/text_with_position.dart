@@ -4,7 +4,7 @@ import 'package:memogenerator/data/models/position.dart';
 
 part 'text_with_position.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.kebab, explicitToJson: true)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TextWithPosition extends Equatable {
   final String id;
   final String text;

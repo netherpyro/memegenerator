@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'position.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.kebab, explicitToJson: true)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Position extends Equatable {
   final double left;
   final double top;
@@ -11,9 +11,9 @@ class Position extends Equatable {
   Position({required this.left, required this.top});
 
   factory Position.fromJson(final Map<String, dynamic> json) =>
-      _$positionFromJson(json);
+      _$PositionFromJson(json);
 
-  Map<String, dynamic> toJson() => _$positionToJson(this);
+  Map<String, dynamic> toJson() => _$PositionToJson(this);
 
   @override
   List<Object?> get props => [left, top];
