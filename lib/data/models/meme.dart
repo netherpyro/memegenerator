@@ -8,10 +8,12 @@ part 'meme.g.dart';
 class Meme extends Equatable {
   final String id;
   final List<TextWithPosition> texts;
+  final String? memePath;
 
   Meme({
     required this.id,
     required this.texts,
+    this.memePath,
   });
 
   factory Meme.fromJson(final Map<String, dynamic> json) => _$MemeFromJson(json);
@@ -19,5 +21,5 @@ class Meme extends Equatable {
   Map<String, dynamic> toJson() => _$MemeToJson(this);
 
   @override
-  List<Object> get props => [id, texts];
+  List<Object?> get props => [id, texts, memePath];
 }

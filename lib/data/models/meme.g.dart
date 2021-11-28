@@ -11,9 +11,11 @@ Meme _$MemeFromJson(Map<String, dynamic> json) => Meme(
       texts: (json['texts'] as List<dynamic>)
           .map((e) => TextWithPosition.fromJson(e as Map<String, dynamic>))
           .toList(),
+      memePath: json['meme-path'] as String?,
     );
 
 Map<String, dynamic> _$MemeToJson(Meme instance) => <String, dynamic>{
       'id': instance.id,
       'texts': instance.texts.map((e) => e.toJson()).toList(),
+      'meme-path': instance.memePath,
     };

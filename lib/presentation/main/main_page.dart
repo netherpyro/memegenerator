@@ -34,8 +34,15 @@ class _MainPageState extends State<MainPage> {
           title: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24)),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreateMemePage()));
+          onPressed: () async {
+            final selectedMemePath = await bloc.selectMeme();
+            if (selectedMemePath == null) return;
+
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CreateMemePage(selectedMemePath: selectedMemePath),
+              ),
+            );
           },
           backgroundColor: AppColors.fuchsia,
           icon: Icon(Icons.add, color: Colors.white),
