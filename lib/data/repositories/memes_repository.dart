@@ -18,7 +18,14 @@ class MemesRepository {
 
   Future<bool> addToMemes(final Meme meme) async {
     final raw = await spData.getMemes();
-    raw.add(json.encode(meme.toJson()));
+    final existentMemeIndex = raw.indexWhere((element) => element.contains(meme.id));
+    if (existentMemeIndex > -1) {
+      raw.removeAt(existentMemeIndex);
+      raw.insert(existentMemeIndex, json.encode(meme.toJson()));
+    } else {
+      raw.add(json.encode(meme.toJson()));
+    }
+
     return _setRawMemes(raw);
   }
 
