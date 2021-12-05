@@ -7,6 +7,7 @@ import 'package:memogenerator/data/models/meme.dart';
 import 'package:memogenerator/data/models/position.dart';
 import 'package:memogenerator/data/models/text_with_position.dart';
 import 'package:memogenerator/data/repositories/memes_repository.dart';
+import 'package:memogenerator/domain/interactors/save_meme_interactor.dart';
 import 'package:memogenerator/presentation/create_meme/models/meme_text_with_offset.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -46,7 +47,10 @@ class CreateMemeBloc {
       return TextWithPosition(id: memeText.id, text: memeText.text, position: position);
     }).toList();
 
-    saveMemeSubscription = _saveMemeInternal(textsWithPositions).asStream().listen((saved) {
+    saveMemeSubscription = SaveMemeInteractor.getInstance()
+        .saveMeme(id: id, textWithPositions: textsWithPositions, imagePath: memePathSubject.value)
+        .asStream()
+        .listen((saved) {
       print("Meme saved: $saved");
     }, onError: (e, st) => print("Error in saveMemeSubscription: $e, $st"));
   }

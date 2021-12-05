@@ -1,4 +1,3 @@
-/*
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -171,4 +170,3 @@ void runTestLesson2Task4() {
     });
   });
 }
-*/
