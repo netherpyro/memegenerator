@@ -170,17 +170,7 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
                           return const AddNewMemeTextButton();
                         } else {
                           final memeText = mco.memeTexts[index - 2];
-                          return Container(
-                            height: 48,
-                            color: mco.matchesId(memeText.id) ? AppColors.darkGrey16 : null,
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(memeText.text,
-                                style: GoogleFonts.roboto(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.darkGrey)),
-                          );
+                          return BottomMemeText(mco: mco, memeText: memeText);
                         }
                       },
                       separatorBuilder: (BuildContext context, int index) {
@@ -199,6 +189,37 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class BottomMemeText extends StatelessWidget {
+  const BottomMemeText({
+    Key? key,
+    required this.mco,
+    required this.memeText,
+  }) : super(key: key);
+
+  final MemeTextWithSelection mco;
+  final MemeText memeText;
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    return GestureDetector(
+      onTap: () => bloc.selectMemeText(memeText.id),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 48,
+        color: mco.matchesId(memeText.id) ? AppColors.darkGrey16 : null,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(memeText.text,
+            style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: AppColors.darkGrey)),
+      ),
     );
   }
 }
