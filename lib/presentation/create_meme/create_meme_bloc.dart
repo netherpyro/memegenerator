@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
@@ -9,7 +8,6 @@ import 'package:memogenerator/data/models/text_with_position.dart';
 import 'package:memogenerator/data/repositories/memes_repository.dart';
 import 'package:memogenerator/domain/interactors/save_meme_interactor.dart';
 import 'package:memogenerator/presentation/create_meme/models/meme_text_with_offset.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
@@ -53,30 +51,6 @@ class CreateMemeBloc {
         .listen((saved) {
       print("Meme saved: $saved");
     }, onError: (e, st) => print("Error in saveMemeSubscription: $e, $st"));
-  }
-
-  Future<bool> _saveMemeInternal(final List<TextWithPosition> textsWithPosition) async {
-    final imagePath = memePathSubject.value;
-    if (imagePath == null) {
-      final meme = Meme(id: id, texts: textsWithPosition);
-      return MemesRepository.getInstance().addToMemes(meme);
-    }
-
-    final docsPath = await getApplicationDocumentsDirectory();
-    final slash = Platform.pathSeparator;
-    final memePath = "${docsPath.absolute.path}${slash}memes";
-    await Directory(memePath).create(recursive: true);
-    final imageName = imagePath.split(slash).last;
-    final newImagePath = "$memePath$slash$imageName";
-    final tempFile = File(imagePath);
-    await tempFile.copy(newImagePath);
-    final meme = Meme(
-      id: id,
-      texts: textsWithPosition,
-      memePath: newImagePath,
-    );
-
-    return MemesRepository.getInstance().addToMemes(meme);
   }
 
   void onChangeTextOffset(final String id, final Offset offset) {
