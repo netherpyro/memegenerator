@@ -299,15 +299,19 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
 
   @override
   void initState() {
+    super.initState();
     top = widget.memeTextWithOffset.offset?.dy ?? widget.parentConstraints.maxHeight / 2;
     left = widget.memeTextWithOffset.offset?.dx ?? widget.parentConstraints.maxWidth / 3;
-    super.initState();
+
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+      bloc.onChangeTextOffset(widget.memeTextWithOffset.id, Offset(left, top));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
-    bloc.onChangeTextOffset(widget.memeTextWithOffset.id, Offset(left, top));
 
     return Positioned(
       top: top,
