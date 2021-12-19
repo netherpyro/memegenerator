@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
@@ -7,8 +8,11 @@ import 'package:memogenerator/data/models/position.dart';
 import 'package:memogenerator/data/models/text_with_position.dart';
 import 'package:memogenerator/data/repositories/memes_repository.dart';
 import 'package:memogenerator/domain/interactors/save_meme_interactor.dart';
+import 'package:memogenerator/domain/interactors/screenshot_interactor.dart';
 import 'package:memogenerator/presentation/create_meme/models/meme_text_with_offset.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:uuid/uuid.dart';
 
 import 'models/meme_text.dart';
@@ -18,9 +22,13 @@ class CreateMemeBloc {
   final memeTextsSubject = BehaviorSubject<List<MemeText>>.seeded(<MemeText>[]);
   final selectedMemeTextSubject = BehaviorSubject<MemeText?>.seeded(null);
   final memeTextOffsetsSubject = BehaviorSubject<List<MemeTextOffset>>.seeded(<MemeTextOffset>[]);
+  final memePathSubject = BehaviorSubject<String?>.seeded(null);
+  final screenshotControllerSubject =
+      BehaviorSubject<ScreenshotController>.seeded(ScreenshotController());
+
   StreamSubscription<bool>? saveMemeSubscription;
   StreamSubscription<Meme?>? existentMemeSubscription;
-  final memePathSubject = BehaviorSubject<String?>.seeded(null);
+  StreamSubscription<void>? shareMemeSubscription;
 
   final String id;
 
@@ -30,6 +38,17 @@ class CreateMemeBloc {
   }) : this.id = id ?? Uuid().v4() {
     if (id != null) _subscribeToExistentMeme();
     memePathSubject.add(selectedMemePath);
+  }
+
+  void shareMeme() {
+    shareMemeSubscription?.cancel();
+    shareMemeSubscription = ScreenshotInteractor.getInstance()
+        .shareScreenshot(screenshotControllerSubject.value)
+        .asStream()
+        .listen(
+          (event) {},
+          onError: (e, st) => print("Error in shareMemeSubscription: $e, $st"),
+        );
   }
 
   void saveMeme() {
@@ -46,7 +65,12 @@ class CreateMemeBloc {
     }).toList();
 
     saveMemeSubscription = SaveMemeInteractor.getInstance()
-        .saveMeme(id: id, textWithPositions: textsWithPositions, imagePath: memePathSubject.value)
+        .saveMeme(
+          id: id,
+          textWithPositions: textsWithPositions,
+          screenshotController: screenshotControllerSubject.value,
+          imagePath: memePathSubject.value,
+        )
         .asStream()
         .listen((saved) {
       print("Meme saved: $saved");
@@ -113,6 +137,9 @@ class CreateMemeBloc {
 
   Stream<String?> observeMemePath() => memePathSubject.distinct();
 
+  Stream<ScreenshotController> observeScreenshotController() =>
+      screenshotControllerSubject.distinct();
+
   void _subscribeToExistentMeme() {
     existentMemeSubscription = MemesRepository.getInstance().getMeme(this.id).asStream().listen(
       (meme) {
@@ -134,7 +161,14 @@ class CreateMemeBloc {
             .toList();
         memeTextsSubject.add(memeTexts);
         memeTextOffsetsSubject.add(memeTextOffsets);
-        memePathSubject.add(meme.memePath);
+        if (meme.memePath != null) {
+          getApplicationDocumentsDirectory().then((docsDirectory) {
+            final onlyImageName = meme.memePath!.split(Platform.pathSeparator).last;
+            final fullImagePath =
+                "${docsDirectory.absolute.path}${Platform.pathSeparator}${SaveMemeInteractor.memesPathName}${Platform.pathSeparator}$onlyImageName";
+            memePathSubject.add(fullImagePath);
+          });
+        }
       },
       onError: (e, st) => print("Error in existentMemeSubscription: $e, $st"),
     );
@@ -144,8 +178,11 @@ class CreateMemeBloc {
     memeTextsSubject.close();
     selectedMemeTextSubject.close();
     memeTextOffsetsSubject.close();
+    memePathSubject.close();
+    screenshotControllerSubject.close();
+
     saveMemeSubscription?.cancel();
     existentMemeSubscription?.cancel();
-    memePathSubject.close();
+    shareMemeSubscription?.cancel();
   }
 }
