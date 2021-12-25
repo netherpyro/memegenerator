@@ -51,6 +51,25 @@ class CreateMemeBloc {
         );
   }
 
+  void changeFontSettings(
+    final String textId,
+    final Color color,
+    final double fontSize,
+  ) {
+    final copiedList = [...memeTextsSubject.value];
+    final index = copiedList.indexWhere((element) => element.id == textId);
+    if (index == -1) {
+      return;
+    }
+    final oldMemeText = copiedList[index];
+    copiedList.removeAt(index);
+    copiedList.insert(
+      index,
+      oldMemeText.copyWithChangedFontSetting(color, fontSize),
+    );
+    memeTextsSubject.add(copiedList);
+  }
+
   void saveMeme() {
     final memeTexts = memeTextsSubject.value;
     final memeTextOffsets = memeTextOffsetsSubject.value;
@@ -132,8 +151,7 @@ class CreateMemeBloc {
           return element.id == memeText.id;
         });
         return MemeTextWithOffset(
-          id: memeText.id,
-          text: memeText.text,
+          memeText: memeText,
           offset: memeTextOffset?.offset,
         );
       }).toList();

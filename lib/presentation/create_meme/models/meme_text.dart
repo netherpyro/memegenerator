@@ -23,7 +23,16 @@ class MemeText extends Equatable {
     return MemeText(id: id, text: newText, color: color, fontSize: fontSize);
   }
 
-  factory MemeText.createFromTextWithPosition(final TextWithPosition textWithPosition) {
+  MemeText copyWithChangedFontSetting(
+    final Color color,
+    final double newFontSize,
+  ) {
+    return MemeText(id: id, text: text, color: color, fontSize: newFontSize);
+  }
+
+  factory MemeText.createFromTextWithPosition(
+    final TextWithPosition textWithPosition,
+  ) {
     return MemeText(
       id: textWithPosition.id,
       text: textWithPosition.text,

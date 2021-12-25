@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:memogenerator/presentation/create_meme/create_meme_bloc.dart';
 import 'package:memogenerator/presentation/create_meme/meme_text_on_canvas.dart';
 import 'package:memogenerator/presentation/create_meme/models/meme_text.dart';
 import 'package:memogenerator/presentation/widgets/app_button.dart';
 import 'package:memogenerator/resources/app_colors.dart';
+import 'package:provider/provider.dart';
 
 class FontSettingsBottomSheet extends StatefulWidget {
   final MemeText memeText;
@@ -18,8 +20,15 @@ class FontSettingsBottomSheet extends StatefulWidget {
 }
 
 class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
-  double fontSize = 20;
-  Color color = Colors.black;
+  late double fontSize;
+  late Color color;
+
+  @override
+  void initState() {
+    super.initState();
+    fontSize = widget.memeText.fontSize;
+    color = widget.memeText.color;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +56,11 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
             color: color,
           ),
           const SizedBox(height: 48),
-          FontSizeSlider(changeFontSize: (value) {
-            setState(() => fontSize = value);
-          }),
+          FontSizeSlider(
+              initialFontSize: fontSize,
+              changeFontSize: (value) {
+                setState(() => fontSize = value);
+              }),
           const SizedBox(height: 16),
           ColorSelection(
             changeColor: (color) {
@@ -59,7 +70,11 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
           const SizedBox(height: 36),
           Align(
             alignment: Alignment.centerRight,
-            child: Buttons(),
+            child: Buttons(
+              textId: widget.memeText.id,
+              color: color,
+              fontSize: fontSize,
+            ),
           ),
           const SizedBox(height: 48),
         ],
@@ -69,23 +84,34 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
 }
 
 class Buttons extends StatelessWidget {
+  final String textId;
+  final Color color;
+  final double fontSize;
+
   const Buttons({
     Key? key,
+    required this.textId,
+    required this.color,
+    required this.fontSize,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         AppButton(
-          onTap: () {},
+          onTap: () => Navigator.of(context).pop(),
           text: "Отмена",
           color: AppColors.darkGrey,
         ),
         const SizedBox(width: 24),
         AppButton(
-          onTap: () {},
+          onTap: () {
+            bloc.changeFontSettings(textId, color, fontSize);
+            Navigator.of(context).pop();
+          },
           text: "Сохранить",
         ),
         const SizedBox(width: 16),
@@ -155,16 +181,24 @@ class FontSizeSlider extends StatefulWidget {
   const FontSizeSlider({
     Key? key,
     required this.changeFontSize,
+    required this.initialFontSize,
   }) : super(key: key);
 
   final ValueChanged<double> changeFontSize;
+  final double initialFontSize;
 
   @override
   State<FontSizeSlider> createState() => _FontSizeSliderState();
 }
 
 class _FontSizeSliderState extends State<FontSizeSlider> {
-  double fontSize = 20;
+  late double fontSize;
+
+  @override
+  void initState() {
+    super.initState();
+    fontSize = widget.initialFontSize;
+  }
 
   @override
   Widget build(BuildContext context) {
