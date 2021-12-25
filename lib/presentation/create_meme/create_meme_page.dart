@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memogenerator/presentation/create_meme/create_meme_bloc.dart';
+import 'package:memogenerator/presentation/create_meme/font_settings_bottom_sheet.dart';
+import 'package:memogenerator/presentation/create_meme/meme_text_on_canvas.dart';
+import 'package:memogenerator/presentation/widgets/app_button.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -178,7 +181,11 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
                         if (index == 0) {
                           return const SizedBox(height: 12);
                         } else if (index == 1) {
-                          return const AddNewMemeTextButton();
+                          return AppButton(
+                            onTap: () => bloc.addNewText(),
+                            text: "Добавить текст",
+                            icon: Icons.add,
+                          );
                         } else {
                           final memeText = mco.memeTexts[index - 2];
                           return BottomMemeText(mco: mco, memeText: memeText);
@@ -225,9 +232,32 @@ class BottomMemeText extends StatelessWidget {
         color: mco.matchesId(memeText.id) ? AppColors.darkGrey16 : null,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Text(memeText.text,
-            style: GoogleFonts.roboto(
-                fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.darkGrey)),
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(memeText.text,
+                  style: GoogleFonts.roboto(
+                      fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.darkGrey)),
+            ),
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return FontSettingsBottomSheet(memeText: memeText);
+                  },
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Icon(Icons.font_download_outlined),
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
       ),
     );
   }
@@ -356,6 +386,8 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
                   selected: selected,
                   parentConstraints: widget.parentConstraints,
                   text: widget.memeTextWithOffset.text,
+                  fontSize: 24,
+                  color: Colors.black,
                 );
               })),
     );
@@ -381,79 +413,5 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
       return widget.parentConstraints.maxHeight - 2 * padding - 30;
     }
     return raw;
-  }
-}
-
-class MemeTextOnCanvas extends StatelessWidget {
-  final double padding;
-  final bool selected;
-  final BoxConstraints parentConstraints;
-  final String text;
-
-  const MemeTextOnCanvas({
-    Key? key,
-    required this.padding,
-    required this.selected,
-    required this.parentConstraints,
-    required this.text,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: parentConstraints.maxWidth,
-        maxHeight: parentConstraints.maxHeight,
-      ),
-      padding: EdgeInsets.all(padding),
-      decoration: selected
-          ? BoxDecoration(
-              color: AppColors.darkGrey16,
-              border: Border.fromBorderSide(
-                BorderSide(
-                  color: AppColors.fuchsia,
-                ),
-              ),
-            )
-          : null,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black, fontSize: 24),
-      ),
-    );
-  }
-}
-
-class AddNewMemeTextButton extends StatelessWidget {
-  const AddNewMemeTextButton({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => bloc.addNewText(),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add, color: AppColors.fuchsia),
-              const SizedBox(width: 8),
-              Text("Добавить текст".toUpperCase(),
-                  style: TextStyle(
-                    color: AppColors.fuchsia,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ))
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
