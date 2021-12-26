@@ -34,7 +34,8 @@ class _MainPageState extends State<MainPage> {
           centerTitle: true,
           backgroundColor: AppColors.lemon,
           foregroundColor: AppColors.darkGrey,
-          title: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24)),
+          title: Text("Мемогенератор",
+              style: GoogleFonts.seymourOne(fontSize: 24)),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
@@ -43,7 +44,8 @@ class _MainPageState extends State<MainPage> {
 
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => CreateMemePage(selectedMemePath: selectedMemePath),
+                builder: (_) =>
+                    CreateMemePage(selectedMemePath: selectedMemePath),
               ),
             );
           },
@@ -114,7 +116,8 @@ class GridItem extends StatelessWidget {
     return GestureDetector(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => CreateMemePage(id: meme.id)),
+            MaterialPageRoute(
+                builder: (context) => CreateMemePage(id: meme.id)),
           );
         },
         child: Container(

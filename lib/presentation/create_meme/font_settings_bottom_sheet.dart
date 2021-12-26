@@ -16,7 +16,8 @@ class FontSettingsBottomSheet extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<FontSettingsBottomSheet> createState() => _FontSettingsBottomSheetState();
+  State<FontSettingsBottomSheet> createState() =>
+      _FontSettingsBottomSheetState();
 }
 
 class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
@@ -33,7 +34,6 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
