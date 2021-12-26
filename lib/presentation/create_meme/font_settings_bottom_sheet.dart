@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:memogenerator/presentation/create_meme/create_meme_bloc.dart';
 import 'package:memogenerator/presentation/create_meme/meme_text_on_canvas.dart';
 import 'package:memogenerator/presentation/create_meme/models/meme_text.dart';
@@ -23,28 +24,33 @@ class FontSettingsBottomSheet extends StatefulWidget {
 class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
   late double fontSize;
   late Color color;
+  late FontWeight fontWeight;
 
   @override
   void initState() {
     super.initState();
     fontSize = widget.memeText.fontSize;
     color = widget.memeText.color;
+    fontWeight = widget.memeText.fontWeight;
   }
 
   @override
   Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 8),
         Center(
-            child: Container(
-                height: 4,
-                width: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.darkGrey38,
-                  borderRadius: BorderRadius.circular(2),
-                ))),
+          child: Container(
+            height: 4,
+            width: 64,
+            decoration: BoxDecoration(
+              color: AppColors.darkGrey38,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         MemeTextOnCanvas(
           padding: 8,
@@ -53,6 +59,7 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
           text: widget.memeText.text,
           fontSize: fontSize,
           color: color,
+          fontWeight: fontWeight,
         ),
         const SizedBox(height: 48),
         FontSizeSlider(
@@ -66,13 +73,25 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
             setState(() => this.color = color);
           },
         ),
+        const SizedBox(height: 16),
+        FontWeightSlider(
+            initialFontWeight: fontWeight,
+            changeFontWeight: (value) {
+              setState(() => fontWeight = value);
+            }),
         const SizedBox(height: 36),
         Align(
           alignment: Alignment.centerRight,
           child: Buttons(
             textId: widget.memeText.id,
-            color: color,
-            fontSize: fontSize,
+            onPositiveButtonAction: () {
+              bloc.changeFontSettings(
+                widget.memeText.id,
+                color,
+                fontSize,
+                fontWeight,
+              );
+            },
           ),
         ),
         const SizedBox(height: 48),
@@ -83,19 +102,16 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
 
 class Buttons extends StatelessWidget {
   final String textId;
-  final Color color;
-  final double fontSize;
+  final VoidCallback onPositiveButtonAction;
 
   const Buttons({
     Key? key,
     required this.textId,
-    required this.color,
-    required this.fontSize,
+    required this.onPositiveButtonAction,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -107,7 +123,7 @@ class Buttons extends StatelessWidget {
         const SizedBox(width: 24),
         AppButton(
           onTap: () {
-            bloc.changeFontSettings(textId, color, fontSize);
+            onPositiveButtonAction();
             Navigator.of(context).pop();
           },
           text: "Сохранить",
@@ -231,6 +247,72 @@ class _FontSizeSliderState extends State<FontSizeSlider> {
                 setState(() {
                   fontSize = value;
                   widget.changeFontSize(value);
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class FontWeightSlider extends StatefulWidget {
+  const FontWeightSlider({
+    Key? key,
+    required this.changeFontWeight,
+    required this.initialFontWeight,
+  }) : super(key: key);
+
+  final ValueChanged<FontWeight> changeFontWeight;
+  final FontWeight initialFontWeight;
+
+  @override
+  State<FontWeightSlider> createState() => _FontWeightSliderState();
+}
+
+class _FontWeightSliderState extends State<FontWeightSlider> {
+  late FontWeight fontWeight;
+
+  @override
+  void initState() {
+    super.initState();
+    fontWeight = widget.initialFontWeight;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 16),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            "Font weight:",
+            style: TextStyle(
+              fontSize: 20,
+              color: AppColors.darkGrey,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: AppColors.fuchsia,
+              inactiveTrackColor: AppColors.fuchsia38,
+              thumbColor: AppColors.fuchsia,
+              valueIndicatorColor: AppColors.fuchsia,
+            ),
+            child: Slider(
+              min: FontWeight.w100.index.toDouble(),
+              max: FontWeight.w900.index.toDouble(),
+              divisions: FontWeight.w900.index - FontWeight.w100.index,
+              value: fontWeight.index.toDouble(),
+              onChanged: (value) {
+                setState(() {
+                  fontWeight = FontWeight.values
+                      .firstWhere((element) => element.index == value.toInt());
+                  widget.changeFontWeight(fontWeight);
                 });
               },
             ),

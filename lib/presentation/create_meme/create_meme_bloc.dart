@@ -61,6 +61,7 @@ class CreateMemeBloc {
     final String textId,
     final Color color,
     final double fontSize,
+    final FontWeight fontWeight,
   ) {
     _hasChanges = true;
     final copiedList = [...memeTextsSubject.value];
@@ -72,7 +73,7 @@ class CreateMemeBloc {
     copiedList.removeAt(index);
     copiedList.insert(
       index,
-      oldMemeText.copyWithChangedFontSetting(color, fontSize),
+      oldMemeText.copyWithChangedFontSetting(color, fontSize, fontWeight),
     );
     memeTextsSubject.add(copiedList);
   }
@@ -93,6 +94,7 @@ class CreateMemeBloc {
         position: position,
         fontSize: memeText.fontSize,
         color: memeText.color,
+        fontWeight: memeText.fontWeight,
       );
     }).toList();
 
@@ -163,11 +165,7 @@ class CreateMemeBloc {
   void clickRemoveText(String textId) {
     _hasChanges = true;
     final copiedList = [...memeTextsSubject.value];
-    final index = copiedList.indexWhere((element) => element.id == textId);
-    if (index == -1) {
-      return;
-    }
-    copiedList.removeAt(index);
+    copiedList.removeWhere((element) => element.id == textId);
     memeTextsSubject.add(copiedList);
     if (selectedMemeTextSubject.value?.id == textId) {
       selectedMemeTextSubject.add(null);
