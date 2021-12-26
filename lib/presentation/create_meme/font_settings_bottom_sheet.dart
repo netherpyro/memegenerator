@@ -33,52 +33,50 @@ class _FontSettingsBottomSheetState extends State<FontSettingsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 8),
-          Center(
-              child: Container(
-                  height: 4,
-                  width: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.darkGrey38,
-                    borderRadius: BorderRadius.circular(2),
-                  ))),
-          const SizedBox(height: 16),
-          MemeTextOnCanvas(
-            padding: 8,
-            selected: true,
-            parentConstraints: BoxConstraints.expand(),
-            text: widget.memeText.text,
-            fontSize: fontSize,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 8),
+        Center(
+            child: Container(
+                height: 4,
+                width: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.darkGrey38,
+                  borderRadius: BorderRadius.circular(2),
+                ))),
+        const SizedBox(height: 16),
+        MemeTextOnCanvas(
+          padding: 8,
+          selected: true,
+          parentConstraints: BoxConstraints.expand(),
+          text: widget.memeText.text,
+          fontSize: fontSize,
+          color: color,
+        ),
+        const SizedBox(height: 48),
+        FontSizeSlider(
+            initialFontSize: fontSize,
+            changeFontSize: (value) {
+              setState(() => fontSize = value);
+            }),
+        const SizedBox(height: 16),
+        ColorSelection(
+          changeColor: (color) {
+            setState(() => this.color = color);
+          },
+        ),
+        const SizedBox(height: 36),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Buttons(
+            textId: widget.memeText.id,
             color: color,
+            fontSize: fontSize,
           ),
-          const SizedBox(height: 48),
-          FontSizeSlider(
-              initialFontSize: fontSize,
-              changeFontSize: (value) {
-                setState(() => fontSize = value);
-              }),
-          const SizedBox(height: 16),
-          ColorSelection(
-            changeColor: (color) {
-              setState(() => this.color = color);
-            },
-          ),
-          const SizedBox(height: 36),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Buttons(
-              textId: widget.memeText.id,
-              color: color,
-              fontSize: fontSize,
-            ),
-          ),
-          const SizedBox(height: 48),
-        ],
-      ),
+        ),
+        const SizedBox(height: 48),
+      ],
     );
   }
 }
