@@ -32,14 +32,19 @@ class CreateMemeBloc {
   StreamSubscription<void>? shareMemeSubscription;
 
   final String id;
+  bool _hasChanges = false;
 
   CreateMemeBloc({
     final String? id,
     final String? selectedMemePath,
   }) : this.id = id ?? Uuid().v4() {
-    if (id != null) _subscribeToExistentMeme();
+    final isNewMeme = id == null;
+    _hasChanges = isNewMeme;
+    if (!isNewMeme) _subscribeToExistentMeme();
     memePathSubject.add(selectedMemePath);
   }
+
+  get hasChanges => _hasChanges;
 
   void shareMeme() {
     shareMemeSubscription?.cancel();
@@ -57,6 +62,7 @@ class CreateMemeBloc {
     final Color color,
     final double fontSize,
   ) {
+    _hasChanges = true;
     final copiedList = [...memeTextsSubject.value];
     final index = copiedList.indexWhere((element) => element.id == textId);
     if (index == -1) {
@@ -99,11 +105,21 @@ class CreateMemeBloc {
         )
         .asStream()
         .listen((saved) {
+      _hasChanges = false;
       print("Meme saved: $saved");
     }, onError: (e, st) => print("Error in saveMemeSubscription: $e, $st"));
   }
 
+  void preSaveTextOffset(final String id, final Offset offset) {
+    _changeTextOffsetInternal(id, offset);
+  }
+
   void onChangeTextOffset(final String id, final Offset offset) {
+    _hasChanges = true;
+    _changeTextOffsetInternal(id, offset);
+  }
+
+  void _changeTextOffsetInternal(final String id, final Offset offset) {
     final copiedMemeTextOffsets = [...memeTextOffsetsSubject.value];
     final currentMemeTextOffset =
         copiedMemeTextOffsets.firstWhereOrNull((element) => element.id == id);
@@ -115,12 +131,14 @@ class CreateMemeBloc {
   }
 
   void addNewText() {
+    _hasChanges = true;
     final newMemeText = MemeText.create();
     memeTextsSubject.add([...memeTextsSubject.value, newMemeText]);
     selectedMemeTextSubject.add(newMemeText);
   }
 
   void changeMemeText(final String id, final String text) {
+    _hasChanges = true;
     final copiedList = [...memeTextsSubject.value];
     final index = copiedList.indexWhere((element) => element.id == id);
     if (index == -1) {
@@ -143,6 +161,7 @@ class CreateMemeBloc {
   }
 
   void clickRemoveText(String textId) {
+    _hasChanges = true;
     final copiedList = [...memeTextsSubject.value];
     final index = copiedList.indexWhere((element) => element.id == textId);
     if (index == -1) {

@@ -45,8 +45,12 @@ class _CreateMemeState extends State<CreateMemePage> {
       value: bloc,
       child: WillPopScope(
         onWillPop: () async {
-          final goBack = await showConfirmationExitDialog(context);
-          return goBack ?? false;
+          var goBack = true;
+          final hasChanges = bloc.hasChanges;
+          if (hasChanges) {
+            goBack = await showConfirmationExitDialog(context) ?? false;
+          }
+          return goBack;
         },
         child: Scaffold(
           resizeToAvoidBottomInset: false,
@@ -442,7 +446,7 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
 
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
-      bloc.onChangeTextOffset(
+      bloc.preSaveTextOffset(
           widget.memeTextWithOffset.memeText.id, Offset(left, top));
     });
   }
