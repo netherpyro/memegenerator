@@ -21,7 +21,8 @@ import 'models/meme_text_offset.dart';
 class CreateMemeBloc {
   final memeTextsSubject = BehaviorSubject<List<MemeText>>.seeded(<MemeText>[]);
   final selectedMemeTextSubject = BehaviorSubject<MemeText?>.seeded(null);
-  final memeTextOffsetsSubject = BehaviorSubject<List<MemeTextOffset>>.seeded(<MemeTextOffset>[]);
+  final memeTextOffsetsSubject =
+      BehaviorSubject<List<MemeTextOffset>>.seeded(<MemeTextOffset>[]);
   final memePathSubject = BehaviorSubject<String?>.seeded(null);
   final screenshotControllerSubject =
       BehaviorSubject<ScreenshotController>.seeded(ScreenshotController());
@@ -74,8 +75,8 @@ class CreateMemeBloc {
     final memeTexts = memeTextsSubject.value;
     final memeTextOffsets = memeTextOffsetsSubject.value;
     final textsWithPositions = memeTexts.map((memeText) {
-      final memeTextPosition = memeTextOffsets
-          .firstWhereOrNull((memeTextWithOffset) => memeTextWithOffset.id == memeText.id);
+      final memeTextPosition = memeTextOffsets.firstWhereOrNull(
+          (memeTextWithOffset) => memeTextWithOffset.id == memeText.id);
       final position = Position(
         left: memeTextPosition?.offset.dx ?? 0,
         top: memeTextPosition?.offset.dy ?? 0,
@@ -132,7 +133,8 @@ class CreateMemeBloc {
   }
 
   void selectMemeText(final String id) {
-    final foundMemeText = memeTextsSubject.value.firstWhereOrNull((element) => element.id == id);
+    final foundMemeText =
+        memeTextsSubject.value.firstWhereOrNull((element) => element.id == id);
     selectedMemeTextSubject.add(foundMemeText);
   }
 
@@ -140,12 +142,27 @@ class CreateMemeBloc {
     selectedMemeTextSubject.add(null);
   }
 
-  Stream<List<MemeText>> observeMemeTexts() =>
-      memeTextsSubject.distinct((prev, next) => ListEquality().equals(prev, next));
+  void clickRemoveText(String textId) {
+    final copiedList = [...memeTextsSubject.value];
+    final index = copiedList.indexWhere((element) => element.id == textId);
+    if (index == -1) {
+      return;
+    }
+    copiedList.removeAt(index);
+    memeTextsSubject.add(copiedList);
+    if (selectedMemeTextSubject.value?.id == textId) {
+      selectedMemeTextSubject.add(null);
+    }
+  }
+
+  Stream<List<MemeText>> observeMemeTexts() => memeTextsSubject
+      .distinct((prev, next) => ListEquality().equals(prev, next));
 
   Stream<List<MemeTextWithOffset>> observeMemeTextWithOffsets() {
-    return Rx.combineLatest2<List<MemeText>, List<MemeTextOffset>, List<MemeTextWithOffset>>(
-        observeMemeTexts(), memeTextOffsetsSubject.distinct(), (memeTexts, memeTextOffsets) {
+    return Rx.combineLatest2<List<MemeText>, List<MemeTextOffset>,
+            List<MemeTextWithOffset>>(
+        observeMemeTexts(), memeTextOffsetsSubject.distinct(),
+        (memeTexts, memeTextOffsets) {
       return memeTexts.map((memeText) {
         final memeTextOffset = memeTextOffsets.firstWhereOrNull((element) {
           return element.id == memeText.id;
@@ -158,7 +175,8 @@ class CreateMemeBloc {
     }).distinct((prev, next) => ListEquality().equals(prev, next));
   }
 
-  Stream<MemeText?> observeSelectedMemeText() => selectedMemeTextSubject.distinct();
+  Stream<MemeText?> observeSelectedMemeText() =>
+      selectedMemeTextSubject.distinct();
 
   Stream<String?> observeMemePath() => memePathSubject.distinct();
 
@@ -166,11 +184,13 @@ class CreateMemeBloc {
       screenshotControllerSubject.distinct();
 
   void _subscribeToExistentMeme() {
-    existentMemeSubscription = MemesRepository.getInstance().getMeme(this.id).asStream().listen(
+    existentMemeSubscription =
+        MemesRepository.getInstance().getMeme(this.id).asStream().listen(
       (meme) {
         if (meme == null) return;
         final memeTexts = meme.texts
-            .map((textWithPosition) => MemeText.createFromTextWithPosition(textWithPosition))
+            .map((textWithPosition) =>
+                MemeText.createFromTextWithPosition(textWithPosition))
             .toList();
         final memeTextOffsets = meme.texts
             .map(
@@ -187,7 +207,8 @@ class CreateMemeBloc {
         memeTextOffsetsSubject.add(memeTextOffsets);
         if (meme.memePath != null) {
           getApplicationDocumentsDirectory().then((docsDirectory) {
-            final onlyImageName = meme.memePath!.split(Platform.pathSeparator).last;
+            final onlyImageName =
+                meme.memePath!.split(Platform.pathSeparator).last;
             final fullImagePath =
                 "${docsDirectory.absolute.path}${Platform.pathSeparator}${SaveMemeInteractor.memesPathName}${Platform.pathSeparator}$onlyImageName";
             memePathSubject.add(fullImagePath);
