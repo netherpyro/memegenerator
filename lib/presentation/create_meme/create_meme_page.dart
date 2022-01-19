@@ -300,7 +300,7 @@ class BottomMemeText extends StatelessWidget {
                   builder: (context) {
                     return Provider.value(
                       value: bloc,
-                      child: FontSettingsBottomSheet(memeText: memeText),
+                      child: FontSettingBottomSheet(memeText: memeText),
                     );
                   },
                 );
