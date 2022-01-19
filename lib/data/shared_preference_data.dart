@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesData {
-  static const memeKey = "favorite_superheroes";
+  static const memeKey = "meme_key";
 
   static SharedPreferencesData? _instance;
 

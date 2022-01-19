@@ -288,7 +288,7 @@ class _FontWeightSliderState extends State<FontWeightSlider> {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
-            "Font weight:",
+            "Font Weight:",
             style: TextStyle(
               fontSize: 20,
               color: AppColors.darkGrey,
