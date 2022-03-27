@@ -6,6 +6,7 @@ import 'package:memogenerator/data/models/meme.dart';
 import 'package:memogenerator/presentation/create_meme/create_meme_page.dart';
 import 'package:memogenerator/presentation/main/main_bloc.dart';
 import 'package:memogenerator/presentation/main/memes_with_docs_path.dart';
+import 'package:memogenerator/presentation/main/models/template_full.dart';
 import 'package:memogenerator/presentation/widgets/app_button.dart';
 import 'package:memogenerator/resources/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -34,33 +35,32 @@ class _MainPageState extends State<MainPage> {
         onWillPop: () async {
           return await showConfirmationExitDialog(context) ?? false;
         },
-        child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: AppColors.lemon,
-            foregroundColor: AppColors.darkGrey,
-            title: Text("Мемогенератор",
-                style: GoogleFonts.seymourOne(fontSize: 24)),
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () async {
-              final selectedMemePath = await bloc.selectMeme();
-              if (selectedMemePath == null) return;
-
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      CreateMemePage(selectedMemePath: selectedMemePath),
-                ),
-              );
-            },
-            backgroundColor: AppColors.fuchsia,
-            icon: Icon(Icons.add, color: Colors.white),
-            label: Text("Создать"),
-          ),
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: MainPageContent(),
+        child: DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              backgroundColor: AppColors.lemon,
+              foregroundColor: AppColors.darkGrey,
+              title: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24)),
+              bottom: TabBar(
+                labelColor: AppColors.darkGrey,
+                indicatorColor: AppColors.fuchsia,
+                indicatorWeight: 3,
+                tabs: [
+                  Tab(text: "Созданные".toUpperCase()),
+                  Tab(text: "Шаблоны".toUpperCase()),
+                ],
+              ),
+            ),
+            floatingActionButton: CreateMemeFab(),
+            backgroundColor: Colors.white,
+            body: TabBarView(
+              children: [
+                SafeArea(child: CreatedMemesGrid()),
+                SafeArea(child: TemplatesGrid()),
+              ],
+            ),
           ),
         ),
       ),
@@ -97,12 +97,33 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-class MainPageContent extends StatefulWidget {
+class CreateMemeFab extends StatelessWidget {
+  const CreateMemeFab({
+    Key? key,
+  }) : super(key: key);
+
   @override
-  _MainPageContentState createState() => _MainPageContentState();
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    return FloatingActionButton.extended(
+      onPressed: () async {
+        final selectedMemePath = await bloc.selectMeme();
+        if (selectedMemePath == null) return;
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CreateMemePage(selectedMemePath: selectedMemePath),
+          ),
+        );
+      },
+      backgroundColor: AppColors.fuchsia,
+      icon: Icon(Icons.add, color: Colors.white),
+      label: Text("Создать"),
+    );
+  }
 }
 
-class _MainPageContentState extends State<MainPageContent> {
+class CreatedMemesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<MainBloc>(context, listen: false);
@@ -121,7 +142,7 @@ class _MainPageContentState extends State<MainPageContent> {
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             children: items.map(
               (item) {
-                return GridItem(docsPath: docsPath, meme: item);
+                return MemeGridItem(docsPath: docsPath, meme: item);
               },
             ).toList(),
           );
@@ -129,8 +150,8 @@ class _MainPageContentState extends State<MainPageContent> {
   }
 }
 
-class GridItem extends StatelessWidget {
-  const GridItem({
+class MemeGridItem extends StatelessWidget {
+  const MemeGridItem({
     Key? key,
     required this.docsPath,
     required this.meme,
@@ -155,6 +176,57 @@ class GridItem extends StatelessWidget {
           ),
           alignment: Alignment.centerLeft,
           child: imageFile.existsSync() ? Image.file(imageFile) : Text(meme.id),
+        ));
+  }
+}
+
+class TemplatesGrid extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    return StreamBuilder<List<TemplateFull>>(
+        stream: bloc.observeTemplates(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+          final templates = snapshot.requireData;
+          return GridView.extent(
+            maxCrossAxisExtent: 180,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            children: templates.map((template) => TemplateGridItem(template: template)).toList(),
+          );
+        });
+  }
+}
+
+class TemplateGridItem extends StatelessWidget {
+  const TemplateGridItem({
+    Key? key,
+    required this.template,
+  }) : super(key: key);
+
+  final TemplateFull template;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageFile = File(template.fullImagePath);
+    return GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => CreateMemePage(selectedMemePath: template.fullImagePath),
+            ),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.darkGrey, width: 1),
+          ),
+          alignment: Alignment.centerLeft,
+          child: imageFile.existsSync() ? Image.file(imageFile) : Text(template.id),
         ));
   }
 }
