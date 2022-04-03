@@ -46,6 +46,14 @@ class MainBloc {
     return imagePath;
   }
 
+  Future<void> addToTemplates() async {
+    final xfile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final imagePath = xfile?.path;
+    if (imagePath != null) {
+      await SaveTemplateInteractor.getInstance().saveTemplate(imagePath: imagePath);
+    }
+  }
+
   void deleteMeme(final String memeId) {
     MemesRepository.getInstance().removeFromMemes(memeId);
   }

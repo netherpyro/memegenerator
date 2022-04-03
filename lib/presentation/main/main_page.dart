@@ -19,13 +19,22 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   late MainBloc bloc;
+  late TabController tabController;
+
+  double tabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     bloc = MainBloc();
+    tabController = TabController(length: 2, vsync: this);
+    tabController.animation!.addListener(() {
+      setState(() {
+        tabIndex = tabController.animation!.value;
+      });
+    });
   }
 
   @override
@@ -36,38 +45,47 @@ class _MainPageState extends State<MainPage> {
         onWillPop: () async {
           return await showConfirmationExitDialog(context) ?? false;
         },
-        child: DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              backgroundColor: AppColors.lemon,
-              foregroundColor: AppColors.darkGrey,
-              title: GestureDetector(
-                  onLongPress: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => EasterEggPage()),
-                    );
-                  },
-                  child: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24))),
-              bottom: TabBar(
-                labelColor: AppColors.darkGrey,
-                indicatorColor: AppColors.fuchsia,
-                indicatorWeight: 3,
-                tabs: [
-                  Tab(text: "Созданные".toUpperCase()),
-                  Tab(text: "Шаблоны".toUpperCase()),
-                ],
-              ),
-            ),
-            floatingActionButton: CreateMemeFab(),
-            backgroundColor: Colors.white,
-            body: TabBarView(
-              children: [
-                SafeArea(child: CreatedMemesGrid()),
-                SafeArea(child: TemplatesGrid()),
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: AppColors.lemon,
+            foregroundColor: AppColors.darkGrey,
+            title: GestureDetector(
+                onLongPress: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => EasterEggPage()),
+                  );
+                },
+                child: Text("Мемогенератор", style: GoogleFonts.seymourOne(fontSize: 24))),
+            bottom: TabBar(
+              controller: tabController,
+              labelColor: AppColors.darkGrey,
+              indicatorColor: AppColors.fuchsia,
+              indicatorWeight: 3,
+              tabs: [
+                Tab(text: "Созданные".toUpperCase()),
+                Tab(text: "Шаблоны".toUpperCase()),
               ],
             ),
+          ),
+          floatingActionButton: tabIndex <= 0.5
+              ? AnimatedScale(
+                  scale: 1 - tabIndex / 0.5,
+                  duration: Duration(milliseconds: 100),
+                  child: CreateMemeFab(),
+                )
+              : AnimatedScale(
+                  scale: (tabIndex - 0.5) / 0.5,
+                  duration: Duration(milliseconds: 100),
+                  child: CreateTemplateFab(),
+                ),
+          backgroundColor: Colors.white,
+          body: TabBarView(
+            controller: tabController,
+            children: [
+              SafeArea(child: CreatedMemesGrid()),
+              SafeArea(child: TemplatesGrid()),
+            ],
           ),
         ),
       ),
@@ -125,7 +143,24 @@ class CreateMemeFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text("Создать"),
+      label: Text("Мем"),
+    );
+  }
+}
+
+class CreateTemplateFab extends StatelessWidget {
+  const CreateTemplateFab({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    return FloatingActionButton.extended(
+      onPressed: () async => await bloc.addToTemplates(),
+      backgroundColor: AppColors.fuchsia,
+      icon: Icon(Icons.add, color: Colors.white),
+      label: Text("Шаблон"),
     );
   }
 }
