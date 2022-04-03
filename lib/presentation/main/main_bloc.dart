@@ -14,10 +14,11 @@ import 'package:rxdart/rxdart.dart';
 class MainBloc {
   Stream<List<MemeThumbnail>> observeMemes() {
     return Rx.combineLatest2<List<Meme>, Directory, List<MemeThumbnail>>(
-      MemesRepository.getInstance().observeMemes(),
+      MemesRepository.getInstance().observeItems(),
       getApplicationDocumentsDirectory().asStream(),
       (memes, docsDirectory) => memes.map((meme) {
-        final fullImageUrl = "${docsDirectory.absolute.path}${Platform.pathSeparator}${meme.id}.png";
+        final fullImageUrl =
+            "${docsDirectory.absolute.path}${Platform.pathSeparator}${meme.id}.png";
         return MemeThumbnail(memeId: meme.id, fullImageUrl: fullImageUrl);
       }).toList(),
     );
@@ -25,7 +26,7 @@ class MainBloc {
 
   Stream<List<TemplateFull>> observeTemplates() {
     return Rx.combineLatest2<List<Template>, Directory, List<TemplateFull>>(
-      TemplatesRepository.getInstance().observeTemplates(),
+      TemplatesRepository.getInstance().observeItems(),
       getApplicationDocumentsDirectory().asStream(),
       (templates, docsDirectory) {
         return templates.map((template) {
@@ -58,11 +59,11 @@ class MainBloc {
   }
 
   void deleteMeme(final String memeId) {
-    MemesRepository.getInstance().removeFromMemes(memeId);
+    MemesRepository.getInstance().removeFromItemsById(memeId);
   }
 
   void deleteTemplate(final String templateId) {
-    TemplatesRepository.getInstance().removeFromTemplates(templateId);
+    TemplatesRepository.getInstance().removeFromItemsById(templateId);
   }
 
   void dispose() {}

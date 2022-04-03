@@ -202,12 +202,11 @@ class CreateMemeBloc {
 
   void _subscribeToExistentMeme() {
     existentMemeSubscription =
-        MemesRepository.getInstance().getMeme(this.id).asStream().listen(
+        MemesRepository.getInstance().getItemById(this.id).asStream().listen(
       (meme) {
         if (meme == null) return;
         final memeTexts = meme.texts
-            .map((textWithPosition) =>
-                MemeText.createFromTextWithPosition(textWithPosition))
+            .map((textWithPosition) => MemeText.createFromTextWithPosition(textWithPosition))
             .toList();
         final memeTextOffsets = meme.texts
             .map(
