@@ -46,5 +46,13 @@ class MainBloc {
     return imagePath;
   }
 
+  void deleteMeme(final String memeId) {
+    MemesRepository.getInstance().removeFromMemes(memeId);
+  }
+
+  void deleteTemplate(final String templateId) {
+    TemplatesRepository.getInstance().removeFromTemplates(templateId);
+  }
+
   void dispose() {}
 }
